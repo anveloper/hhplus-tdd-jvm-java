@@ -1,13 +1,14 @@
 package io.hhplus.tdd.point;
 
-import io.hhplus.tdd.database.PointHistoryTable;
-import io.hhplus.tdd.database.UserPointTable;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
+import io.hhplus.tdd.database.PointHistoryTable;
+import io.hhplus.tdd.database.UserPointTable;
+
 @Service
-public class PointServiceImpl implements PointService{
+public class PointServiceImpl implements PointService {
 
     private final UserPointTable userPointTable;
     private final PointHistoryTable pointHistoryTable;
@@ -19,7 +20,10 @@ public class PointServiceImpl implements PointService{
 
     @Override
     public UserPoint charge(long userId, long amount) {
-        return null;
+        long prevPoint = userPointTable.selectById(userId).point(); // 아이디로 이전 금액을 조회하고,
+        UserPoint updated = userPointTable.insertOrUpdate(userId, prevPoint + amount); // 포인트를 업데이트 한다.
+        pointHistoryTable.insert(userId, amount, TransactionType.CHARGE, updated.updateMillis()); // 히스토리에 기록
+        return updated; // 업데이트 된 포인트를 반환한다.
     }
 
     @Override
@@ -37,3 +41,4 @@ public class PointServiceImpl implements PointService{
         return List.of();
     }
 }
+
