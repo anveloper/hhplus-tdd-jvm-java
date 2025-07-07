@@ -44,7 +44,7 @@ public class PointServiceImpl implements PointService {
 
     @Override
     public UserPoint getUserPoint(long userId) {
-        return null;
+        return userPointTable.selectById(userId);
     }
 
     @Override
