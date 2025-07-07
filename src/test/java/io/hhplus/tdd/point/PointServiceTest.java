@@ -45,4 +45,25 @@ class PointServiceTest {
 
         assertThrows(IllegalStateException.class, () -> service.use(userId, amount));
     }
+
+    @Test
+    void 포인트_조회() {
+        long userId = 1L;
+        long amount = 1000L;
+
+        service.charge(userId, amount); // 먼저 금액을 충전
+
+        UserPoint result = service.getUserPoint(userId); // 포인트 조회 함수 호출
+
+        assertNotNull(result);
+        assertEquals(userId, result.id());
+        assertEquals(amount, result.point()); // 포인트 확인
+
+        // TODO: 포인트 충전 확인과 거의 비슷한 로직이므로, 추후 테스트를 통합?
+    }
+
+    @Test
+    void 포인트_히스토리_조회() {
+
+    }
 }
