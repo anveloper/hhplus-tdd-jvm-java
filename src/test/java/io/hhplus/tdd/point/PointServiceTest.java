@@ -26,6 +26,14 @@ class PointServiceTest {
     }
 
     @Test
+    void 포인트_충전_실패() {
+        long userId = 1L;
+        long amount = -1000L;
+
+        assertThrows(IllegalArgumentException.class, () -> service.charge(userId, amount));
+    }
+
+    @Test
     void 포인트_사용_성공() {
         long userId = 1L;
         long initialAmount = 2000L;
