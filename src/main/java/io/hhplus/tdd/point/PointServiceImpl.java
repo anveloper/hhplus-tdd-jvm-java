@@ -20,6 +20,10 @@ public class PointServiceImpl implements PointService {
 
     @Override
     public UserPoint charge(long userId, long amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("충전 금액은 0보다 커야 합니다.");
+        }
+
         long prevPoint = userPointTable.selectById(userId).point(); // 아이디로 이전 금액을 조회하고,
 
         UserPoint updated = userPointTable.insertOrUpdate(userId, prevPoint + amount); // 포인트를 업데이트 한다.
