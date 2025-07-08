@@ -45,7 +45,8 @@ public class PointController {
             @PathVariable long id,
             @RequestBody long amount
     ) {
-        return new UserPoint(0, 0, 0);
+        log.info("요청: 사용자 {} 포인트 {} 충전 요청", id, amount);
+        return pointService.charge(id, amount);
     }
 
     /**

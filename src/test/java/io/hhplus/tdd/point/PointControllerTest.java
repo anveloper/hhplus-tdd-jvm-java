@@ -46,7 +46,7 @@ public class PointControllerTest {
         // 포인트 조회로 id와 포인트를 확인하기 위해 controller의 GET /point/{id} 우선 구현(연결) 필요 확인
         mockMvc.perform(get("/point/{id}", userId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(userId))
+                .andExpect(jsonPath("$.id").value(userId)) // GET /point/{id} 구현 후 id는 통과, point는 실패
                 .andExpect(jsonPath("$.point").value(chargeAmount));
     }
 }
