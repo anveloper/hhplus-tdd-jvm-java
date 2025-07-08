@@ -71,4 +71,30 @@ public class PointControllerTest {
                         .content(objectMapper.writeValueAsString(chargeAmount)))
                 .andExpect(status().is5xxServerError());
     }
+
+    @Test
+    void 포인트_사용_성공() throws Exception {
+        long userId = 1L;
+        long chargeAmount = 5_000L;
+        long useAmount = 2_000L;
+        long expectedRemaining = chargeAmount - useAmount;
+
+        // 먼저 충전
+        mockMvc.perform(patch("/point/{id}/charge", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(chargeAmount)))
+                .andExpect(status().isOk());
+
+        // 포인트 사용
+        mockMvc.perform(patch("/point/{id}/use", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(useAmount)))
+                .andExpect(status().isOk());
+
+        // 남은 포인트 확인
+        mockMvc.perform(get("/point/{id}", userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(userId))
+                .andExpect(jsonPath("$.point").value(expectedRemaining));
+    }
 }
