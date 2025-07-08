@@ -3,20 +3,42 @@ package io.hhplus.tdd.point;
 import io.hhplus.tdd.database.PointHistoryTable;
 import io.hhplus.tdd.database.UserPointTable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
-class PointServiceTest {
-    private final UserPointTable userPointTable = new UserPointTable();
-    private final PointHistoryTable pointHistoryTable = new PointHistoryTable();
-    private final PointService service = new PointService(userPointTable, pointHistoryTable);
+
+@ExtendWith(MockitoExtension.class)
+class PointServiceTestWithMockito {
+
+    @Mock
+    private UserPointTable userPointTable;
+
+    @Mock
+    private PointHistoryTable pointHistoryTable;
+
+    @InjectMocks
+    private PointService service;
 
     @Test
     void 포인트_충전_성공() {
         long userId = 1L;
         long amount = 1000L;
+
+        // Stub
+        when(userPointTable.selectById(userId))
+                .thenReturn(new UserPoint(userId, 0L, System.currentTimeMillis()));
+
+        when(userPointTable.insertOrUpdate(eq(userId), anyLong()))
+                .thenReturn(new UserPoint(userId, amount, System.currentTimeMillis()));
 
         UserPoint result = service.charge(userId, amount);
 
@@ -48,7 +70,11 @@ class PointServiceTest {
         long initialAmount = 2000L;
         long useAmount = 1000L;
 
-        service.charge(userId, initialAmount);
+        when(userPointTable.selectById(userId))
+                .thenReturn(new UserPoint(userId, initialAmount, System.currentTimeMillis()));
+
+        when(userPointTable.insertOrUpdate(eq(userId), eq(initialAmount - useAmount)))
+                .thenReturn(new UserPoint(userId, initialAmount - useAmount, System.currentTimeMillis()));
 
         UserPoint result = service.use(userId, useAmount);
 
@@ -62,6 +88,9 @@ class PointServiceTest {
         long userId = 1L;
         long amount = 2000L;
 
+        when(userPointTable.selectById(userId))
+                .thenReturn(new UserPoint(userId, 1000L, System.currentTimeMillis())); // 포인트 부족
+
         assertThrows(IllegalStateException.class, () -> service.use(userId, amount));
     }
 
@@ -70,16 +99,14 @@ class PointServiceTest {
         long userId = 1L;
         long amount = 1000L;
 
-        service.charge(userId, amount); // 먼저 금액을 충전
+        when(userPointTable.selectById(userId))
+                .thenReturn(new UserPoint(userId, amount, System.currentTimeMillis()));
 
         UserPoint result = service.getUserPoint(userId); // 포인트 조회 함수 호출
 
         assertNotNull(result);
         assertEquals(userId, result.id());
         assertEquals(amount, result.point()); // 포인트 확인
-
-        // TODO [RESOLVED]: 포인트 충전 확인과 거의 비슷한 로직, 추후 테스트를 통합?
-        //  => 서로 다른 요구 사항으로 유지
     }
 
     @Test
@@ -87,11 +114,16 @@ class PointServiceTest {
         long userId = 1L;
 
         // 기록 생성
-        service.charge(userId, 1000L);
-        service.charge(userId, 1000L);
-        service.use(userId, 500L);
-        service.charge(userId, 2000L);
-        service.use(userId, 1000L);
+        List<PointHistory> fakeHistories = List.of(
+                new PointHistory(1, userId, 1000L, TransactionType.CHARGE, System.currentTimeMillis()),
+                new PointHistory(2, userId, 1000L, TransactionType.CHARGE, System.currentTimeMillis()),
+                new PointHistory(3, userId, 500L, TransactionType.USE, System.currentTimeMillis()),
+                new PointHistory(4, userId, 2000L, TransactionType.CHARGE, System.currentTimeMillis()),
+                new PointHistory(5, userId, 1000L, TransactionType.USE, System.currentTimeMillis())
+        );
+
+        when(pointHistoryTable.selectAllByUserId(userId)).thenReturn(fakeHistories);
+        when(userPointTable.selectById(userId)).thenReturn(new UserPoint(userId, 2500L, System.currentTimeMillis()));
 
         List<PointHistory> historyList = service.getHistory(userId);
 
@@ -115,8 +147,5 @@ class PointServiceTest {
         UserPoint finalPoint = service.getUserPoint(userId);
         assertNotNull(finalPoint);
         assertEquals(2500L, finalPoint.point());
-
-        // TODO [RESOLVED]: 최종 잔액 확인도 포인트 조회와 중복되는 테스트가 아닌 지?
-        //  => 서로 다른 요구 사항으로 유지
     }
 }
