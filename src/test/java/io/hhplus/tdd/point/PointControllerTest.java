@@ -97,4 +97,23 @@ public class PointControllerTest {
                 .andExpect(jsonPath("$.id").value(userId))
                 .andExpect(jsonPath("$.point").value(expectedRemaining));
     }
+
+    @Test
+    void 포인트_사용_실패_포인트_부족() throws Exception {
+        long userId = 2L;
+        long chargeAmount = 1_000L;
+        long useAmount = 5_000L;
+
+        // 먼저 충전
+        mockMvc.perform(patch("/point/{id}/charge", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(chargeAmount)))
+                .andExpect(status().isOk());
+
+        // 사용 실패
+        mockMvc.perform(patch("/point/{id}/use", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(useAmount)))
+                .andExpect(status().isInternalServerError()); // 500 Internal Server Error
+    }
 }
