@@ -27,9 +27,16 @@ public class PointControllerTest {
         long userId = 1L;
         long chargeAmount = 3_000L;
 
+        // 포인트 충전 테스트를 먼저 작성하였으나, 기존 코드에 new UserPoint()가 고정되어있어 isOk()만으로는 확인 불가
         mockMvc.perform(patch("/point/{id}/charge", userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(chargeAmount)))
                 .andExpect(status().isOk());
+
+        // 포인트 조회로 id와 포인트를 확인하기 위해 controller의 GET /point/{id} 우선 구현(연결) 필요 확인
+        mockMvc.perform(get("/point/{id}", userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(userId))
+                .andExpect(jsonPath("$.point").value(chargeAmount));
     }
 }
