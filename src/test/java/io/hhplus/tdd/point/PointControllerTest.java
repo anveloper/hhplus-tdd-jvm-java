@@ -116,4 +116,50 @@ public class PointControllerTest {
                         .content(objectMapper.writeValueAsString(useAmount)))
                 .andExpect(status().isInternalServerError()); // 500 Internal Server Error
     }
+
+    @Test
+    void 포인트_히스토리_조회() throws Exception {
+        long userId = 3L;
+
+        mockMvc.perform(patch("/point/{id}/charge", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(1000L)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(patch("/point/{id}/charge", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(1000L)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(patch("/point/{id}/use", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(500L)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(patch("/point/{id}/charge", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(2000L)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(patch("/point/{id}/use", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(1000L)))
+                .andExpect(status().isOk());
+
+        // 히스토리 조회 및 검증
+        mockMvc.perform(get("/point/{id}/histories", userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(5))
+                .andExpect(jsonPath("$[0].type").value("CHARGE"))
+                .andExpect(jsonPath("$[0].amount").value(1000))
+                .andExpect(jsonPath("$[1].type").value("CHARGE"))
+                .andExpect(jsonPath("$[1].amount").value(1000))
+                .andExpect(jsonPath("$[2].type").value("USE"))
+                .andExpect(jsonPath("$[2].amount").value(500))
+                .andExpect(jsonPath("$[3].type").value("CHARGE"))
+                .andExpect(jsonPath("$[3].amount").value(2000))
+                .andExpect(jsonPath("$[4].type").value("USE"))
+                .andExpect(jsonPath("$[4].amount").value(1000));
+    }
+
 }
