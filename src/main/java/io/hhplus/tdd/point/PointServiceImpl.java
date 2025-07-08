@@ -9,7 +9,7 @@ import io.hhplus.tdd.database.UserPointTable;
 
 @Service
 public class PointServiceImpl implements PointService {
-
+    private final long LIMIT_MAX_POINT = 100_000;
     private final UserPointTable userPointTable;
     private final PointHistoryTable pointHistoryTable;
 
@@ -22,6 +22,8 @@ public class PointServiceImpl implements PointService {
     public UserPoint charge(long userId, long amount) {
         if (amount <= 0) {
             throw new IllegalArgumentException("충전 금액은 0보다 커야 합니다.");
+        } else if (amount > LIMIT_MAX_POINT) {
+            throw new IllegalArgumentException("충전 금액은 100,000보다 작아야 합니다.");
         }
 
         long prevPoint = userPointTable.selectById(userId).point(); // 아이디로 이전 금액을 조회하고,
