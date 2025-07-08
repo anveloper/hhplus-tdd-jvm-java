@@ -3,6 +3,7 @@ package io.hhplus.tdd.point;
 import io.hhplus.tdd.database.PointHistoryTable;
 import io.hhplus.tdd.database.UserPointTable;
 import lombok.RequiredArgsConstructor;
+import lombok.Synchronized;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,7 +26,7 @@ public class PointService {
     private final UserPointTable userPointTable;
     private final PointHistoryTable pointHistoryTable;
 
-
+    @Synchronized
     UserPoint charge(long userId, long amount){
         if (amount <= 0) {
             throw new IllegalArgumentException("충전 금액은 0보다 커야 합니다.");
@@ -41,6 +42,7 @@ public class PointService {
         return updated; // 업데이트 된 포인트를 반환한다.
     };
 
+    @Synchronized
     UserPoint use(long userId, long amount){
         long currentPoint = userPointTable.selectById(userId).point(); // 아이디로 현재 금액을 조회하고,
 
