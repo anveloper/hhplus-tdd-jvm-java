@@ -78,7 +78,7 @@ class PointServiceTest {
         assertEquals(userId, result.id());
         assertEquals(amount, result.point()); // 포인트 확인
 
-        // TODO [RESOLVED]: 포인트 충전 확인과 거의 비슷한 로직, 추후 테스트를 통합?
+        // RESOLVED: 포인트 충전 확인과 거의 비슷한 로직, 추후 테스트를 통합?
         //  => 서로 다른 요구 사항으로 유지
     }
 
@@ -116,7 +116,7 @@ class PointServiceTest {
         assertNotNull(finalPoint);
         assertEquals(2500L, finalPoint.point());
 
-        // TODO [RESOLVED]: 최종 잔액 확인도 포인트 조회와 중복되는 테스트가 아닌 지?
+        // RESOLVED: 최종 잔액 확인도 포인트 조회와 중복되는 테스트가 아닌 지?
         //  => 서로 다른 요구 사항으로 유지
     }
 }

@@ -49,4 +49,26 @@ public class PointControllerTest {
                 .andExpect(jsonPath("$.id").value(userId)) // GET /point/{id} 구현 후 id는 통과, point는 실패
                 .andExpect(jsonPath("$.point").value(chargeAmount));
     }
+
+    @Test
+    void 포인트_충전_실패_0보다_작은_금액() throws Exception {
+        long userId = 1L;
+        long chargeAmount = -500L;
+
+        mockMvc.perform(patch("/point/{id}/charge", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(chargeAmount)))
+                .andExpect(status().is5xxServerError());
+    }
+
+    @Test
+    void 포인트_충전_실패_최대_제한_금액() throws Exception {
+        long userId = 1L;
+        long chargeAmount = 100_010L;
+
+        mockMvc.perform(patch("/point/{id}/charge", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(chargeAmount)))
+                .andExpect(status().is5xxServerError());
+    }
 }
