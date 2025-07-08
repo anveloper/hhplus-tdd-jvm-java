@@ -23,6 +23,16 @@ public class PointControllerTest {
     ObjectMapper objectMapper;
 
     @Test
+    void 포인트_조회_동작() throws Exception {
+        long userId = 1L;
+
+        mockMvc.perform(get("/point/{id}", userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(userId));
+    }
+
+
+    @Test
     void 포인트_충전_정상_동작() throws Exception {
         long userId = 1L;
         long chargeAmount = 3_000L;
