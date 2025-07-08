@@ -26,9 +26,17 @@ class PointServiceTest {
     }
 
     @Test
-    void 포인트_충전_실패() {
+    void 포인트_충전_실패_0보다_작은_금액() {
         long userId = 1L;
         long amount = -1000L;
+
+        assertThrows(IllegalArgumentException.class, () -> service.charge(userId, amount));
+    }
+
+    @Test
+    void 포인트_충전_실패_최대_제한_금액() {
+        long userId = 1L;
+        long amount = 100_010L; // RED: 최대금액을 아직 설정하지 않은 상태에서 오류를 예측함 -> 오류가 나지 않아서 실패
 
         assertThrows(IllegalArgumentException.class, () -> service.charge(userId, amount));
     }
