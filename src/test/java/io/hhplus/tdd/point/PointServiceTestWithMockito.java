@@ -15,7 +15,6 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-
 @ExtendWith(MockitoExtension.class)
 class PointServiceTestWithMockito {
 
@@ -28,17 +27,24 @@ class PointServiceTestWithMockito {
     @InjectMocks
     private PointService service;
 
+    private void 조회_응답_설정(long userId, long point) {
+        when(userPointTable.selectById(userId))
+                .thenReturn(new UserPoint(userId, point, System.currentTimeMillis()));
+    }
+
+    private void 저장_응답_설정(long userId, long point) {
+        when(userPointTable.insertOrUpdate(eq(userId), anyLong()))
+                .thenReturn(new UserPoint(userId, point, System.currentTimeMillis()));
+    }
+
     @Test
     void 포인트_충전_성공() {
         long userId = 1L;
         long amount = 1000L;
 
         // Stub
-        when(userPointTable.selectById(userId))
-                .thenReturn(new UserPoint(userId, 0L, System.currentTimeMillis()));
-
-        when(userPointTable.insertOrUpdate(eq(userId), anyLong()))
-                .thenReturn(new UserPoint(userId, amount, System.currentTimeMillis()));
+        조회_응답_설정(userId, 0L);
+        저장_응답_설정(userId, amount);
 
         UserPoint result = service.charge(userId, amount);
 
@@ -70,11 +76,8 @@ class PointServiceTestWithMockito {
         long initialAmount = 2000L;
         long useAmount = 1000L;
 
-        when(userPointTable.selectById(userId))
-                .thenReturn(new UserPoint(userId, initialAmount, System.currentTimeMillis()));
-
-        when(userPointTable.insertOrUpdate(eq(userId), eq(initialAmount - useAmount)))
-                .thenReturn(new UserPoint(userId, initialAmount - useAmount, System.currentTimeMillis()));
+        조회_응답_설정(userId, initialAmount);
+        저장_응답_설정(userId, initialAmount - useAmount);
 
         UserPoint result = service.use(userId, useAmount);
 
@@ -88,8 +91,7 @@ class PointServiceTestWithMockito {
         long userId = 1L;
         long amount = 2000L;
 
-        when(userPointTable.selectById(userId))
-                .thenReturn(new UserPoint(userId, 1000L, System.currentTimeMillis())); // 포인트 부족
+        조회_응답_설정(userId, 1000L);
 
         assertThrows(IllegalStateException.class, () -> service.use(userId, amount));
     }
@@ -99,8 +101,7 @@ class PointServiceTestWithMockito {
         long userId = 1L;
         long amount = 1000L;
 
-        when(userPointTable.selectById(userId))
-                .thenReturn(new UserPoint(userId, amount, System.currentTimeMillis()));
+        조회_응답_설정(userId, amount);
 
         UserPoint result = service.getUserPoint(userId); // 포인트 조회 함수 호출
 
@@ -121,9 +122,9 @@ class PointServiceTestWithMockito {
                 new PointHistory(4, userId, 2000L, TransactionType.CHARGE, System.currentTimeMillis()),
                 new PointHistory(5, userId, 1000L, TransactionType.USE, System.currentTimeMillis())
         );
-
+        // REFACTOR 제외, 한 곳에서 밖에 사용하지 않음
         when(pointHistoryTable.selectAllByUserId(userId)).thenReturn(fakeHistories);
-        when(userPointTable.selectById(userId)).thenReturn(new UserPoint(userId, 2500L, System.currentTimeMillis()));
+        조회_응답_설정(userId, 2500L);
 
         List<PointHistory> historyList = service.getHistory(userId);
 
