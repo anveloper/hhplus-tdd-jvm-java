@@ -22,10 +22,25 @@ public class PointControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
+    private void 충전(long userId, long amount) throws Exception {
+        mockMvc.perform(patch("/point/{id}/charge", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(amount)))
+                .andExpect(status().isOk());
+    }
+
+    private void 사용(long userId, long amount) throws Exception {
+        mockMvc.perform(patch("/point/{id}/use", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(amount)))
+                .andExpect(status().isOk());
+    }
+
     @Test
     void 포인트_조회_동작() throws Exception {
         long userId = 1L;
 
+        // REFACTOR 제외, 주요 로직
         mockMvc.perform(get("/point/{id}", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId));
@@ -37,12 +52,14 @@ public class PointControllerTest {
         long userId = 1L;
         long chargeAmount = 3_000L;
 
+        // REFACTOR 제외, 주요 로직
         // 포인트 충전 테스트를 먼저 작성하였으나, 기존 코드에 new UserPoint()가 고정되어있어 isOk()만으로는 확인 불가
         mockMvc.perform(patch("/point/{id}/charge", userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(chargeAmount)))
                 .andExpect(status().isOk());
 
+        // REFACTOR 제외, 검증 로직
         // 포인트 조회로 id와 포인트를 확인하기 위해 controller의 GET /point/{id} 우선 구현(연결) 필요 확인
         mockMvc.perform(get("/point/{id}", userId))
                 .andExpect(status().isOk())
@@ -55,6 +72,7 @@ public class PointControllerTest {
         long userId = 1L;
         long chargeAmount = -500L;
 
+        // REFACTOR 제외, 주요 로직
         mockMvc.perform(patch("/point/{id}/charge", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(chargeAmount)))
@@ -66,6 +84,7 @@ public class PointControllerTest {
         long userId = 1L;
         long chargeAmount = 100_010L;
 
+        // REFACTOR 제외, 주요 로직
         mockMvc.perform(patch("/point/{id}/charge", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(chargeAmount)))
@@ -79,19 +98,16 @@ public class PointControllerTest {
         long useAmount = 2_000L;
         long expectedRemaining = chargeAmount - useAmount;
 
-        // 먼저 충전
-        mockMvc.perform(patch("/point/{id}/charge", userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(chargeAmount)))
-                .andExpect(status().isOk());
+        // 먼저 충전, REFACTOR
+        충전(userId, chargeAmount);
 
-        // 포인트 사용
+        // 포인트 사용, REFACTOR 제외, 주요 로직
         mockMvc.perform(patch("/point/{id}/use", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(useAmount)))
                 .andExpect(status().isOk());
 
-        // 남은 포인트 확인
+        // 남은 포인트 확인, REFACTOR 제외, 검증 로직
         mockMvc.perform(get("/point/{id}", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId))
@@ -104,13 +120,10 @@ public class PointControllerTest {
         long chargeAmount = 1_000L;
         long useAmount = 5_000L;
 
-        // 먼저 충전
-        mockMvc.perform(patch("/point/{id}/charge", userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(chargeAmount)))
-                .andExpect(status().isOk());
+        // 먼저 충전, REFACTOR
+        충전(userId, chargeAmount);
 
-        // 사용 실패
+        // 사용 실패, REFACTOR 제외, 주요 로직
         mockMvc.perform(patch("/point/{id}/use", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(useAmount)))
@@ -121,32 +134,14 @@ public class PointControllerTest {
     void 포인트_히스토리_조회() throws Exception {
         long userId = 3L;
 
-        mockMvc.perform(patch("/point/{id}/charge", userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(1000L)))
-                .andExpect(status().isOk());
+        // REFACTOR
+        충전(userId, 1000L);
+        충전(userId, 1000L);
+        사용(userId, 500L);
+        충전(userId, 2000L);
+        사용(userId, 1000L);
 
-        mockMvc.perform(patch("/point/{id}/charge", userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(1000L)))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(patch("/point/{id}/use", userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(500L)))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(patch("/point/{id}/charge", userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(2000L)))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(patch("/point/{id}/use", userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(1000L)))
-                .andExpect(status().isOk());
-
-        // 히스토리 조회 및 검증
+        // 히스토리 조회 및 검증, REFACTOR 제외, 주요 로직
         mockMvc.perform(get("/point/{id}/histories", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(5))
