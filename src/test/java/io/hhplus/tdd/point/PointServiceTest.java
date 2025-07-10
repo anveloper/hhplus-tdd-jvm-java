@@ -13,12 +13,25 @@ class PointServiceTest {
     private final PointHistoryTable pointHistoryTable = new PointHistoryTable();
     private final PointService service = new PointService(userPointTable, pointHistoryTable);
 
+    private void 충전(long userId, long... amounts) {
+        for (long amount : amounts) {
+            service.charge(userId, amount);
+        }
+    }
+
+    private void 사용(long userId, long... amounts) {
+        for (long amount : amounts) {
+            service.use(userId, amount);
+        }
+    }
+
+
     @Test
     void 포인트_충전_성공() {
         long userId = 1L;
         long amount = 1000L;
 
-        UserPoint result = service.charge(userId, amount);
+        UserPoint result = service.charge(userId, amount); // REFACTOR 예외, 주요 테스트 로직
 
         assertNotNull(result); // UserPoint 객체가 정상적으로 생성되고,
         assertEquals(userId, result.id()); // 생성된 아이디와 주입한 아이디가 동일한 지,
@@ -48,7 +61,7 @@ class PointServiceTest {
         long initialAmount = 2000L;
         long useAmount = 1000L;
 
-        service.charge(userId, initialAmount);
+        충전(userId, initialAmount); // REFACTOR
 
         UserPoint result = service.use(userId, useAmount);
 
@@ -70,7 +83,7 @@ class PointServiceTest {
         long userId = 1L;
         long amount = 1000L;
 
-        service.charge(userId, amount); // 먼저 금액을 충전
+        충전(userId, amount); // 먼저 금액을 충전, REFACTOR
 
         UserPoint result = service.getUserPoint(userId); // 포인트 조회 함수 호출
 
@@ -86,12 +99,11 @@ class PointServiceTest {
     void 포인트_히스토리_조회() {
         long userId = 1L;
 
-        // 기록 생성
-        service.charge(userId, 1000L);
-        service.charge(userId, 1000L);
-        service.use(userId, 500L);
-        service.charge(userId, 2000L);
-        service.use(userId, 1000L);
+        // 기록 생성, REFACTOR
+        충전(userId, 1000L, 1000L);
+        사용(userId, 500L);
+        충전(userId, 2000L);
+        사용(userId, 1000L);
 
         List<PointHistory> historyList = service.getHistory(userId);
 
