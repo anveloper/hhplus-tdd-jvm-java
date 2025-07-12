@@ -49,7 +49,7 @@ public class PointControllerTest {
 
     @Test
     void 포인트_충전_정상_동작() throws Exception {
-        long userId = 1L;
+        long userId = 2L;
         long chargeAmount = 3_000L;
 
         // REFACTOR 제외, 주요 로직
@@ -69,7 +69,7 @@ public class PointControllerTest {
 
     @Test
     void 포인트_충전_실패_0보다_작은_금액() throws Exception {
-        long userId = 1L;
+        long userId = 3L;
         long chargeAmount = -500L;
 
         // REFACTOR 제외, 주요 로직
@@ -81,7 +81,7 @@ public class PointControllerTest {
 
     @Test
     void 포인트_충전_실패_최대_제한_금액() throws Exception {
-        long userId = 1L;
+        long userId = 4L;
         long chargeAmount = 100_010L;
 
         // REFACTOR 제외, 주요 로직
@@ -93,7 +93,7 @@ public class PointControllerTest {
 
     @Test
     void 포인트_사용_성공() throws Exception {
-        long userId = 1L;
+        long userId = 5L;
         long chargeAmount = 5_000L;
         long useAmount = 2_000L;
         long expectedRemaining = chargeAmount - useAmount;
@@ -116,7 +116,7 @@ public class PointControllerTest {
 
     @Test
     void 포인트_사용_실패_포인트_부족() throws Exception {
-        long userId = 2L;
+        long userId = 6L;
         long chargeAmount = 1_000L;
         long useAmount = 5_000L;
 
@@ -132,7 +132,7 @@ public class PointControllerTest {
 
     @Test
     void 포인트_히스토리_조회() throws Exception {
-        long userId = 3L;
+        long userId = 7L;
 
         // REFACTOR
         충전(userId, 1000L);
